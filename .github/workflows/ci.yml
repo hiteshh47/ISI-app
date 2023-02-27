@@ -1,0 +1,48 @@
+name: CI
+on: 
+  pull_request:
+    branches: [develop, master]
+  push:
+    branches: [develop, master]
+
+jobs:
+  job-develop:
+    runs-on: ubuntu-latest
+    env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN}}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dep
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - run: npm ci
+      - run: npm test -- --coverage
+        env:
+         CI: true
+      - name: Upload Test coverage  
+        uses: actions/upload-artifact@v1
+        with:
+          name: test-coverage
+          path: coverage
+      - name: Build Project
+        if: github.event_name == 'push'
+        run: npm run build
+      - name: Upload Build coverage
+        if: github.event_name == 'push' 
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-coverage
+          path: build
+
+      - name: Deploy to staging test
+        if: github.event_name == 'push'
+        run: npx surge --project ./build --domain elegant-fairies.surge.sh
+
+
+      - name: Deploy to Production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: npx surge --project ./build --domain workable-dad.surge.sh
+
+
