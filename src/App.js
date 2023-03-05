@@ -12,48 +12,60 @@ import { getNotebookImageSrc } from './visualizeimg';
 function App() {
   const [file, setFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
-
+  //Handles the file 
   function handleFile(event) {
     setFile(event.target.files[0]);
   }
-
+  //Handles the upload
   function handleUpload(event) {
     event.preventDefault(); // prevent default form submission
-
+  
     if (!file) {
       console.error('No file selected!');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('url-to-upload-file', {
-      method: 'POST',
-      body: formData,
-    })
+  
+    fetch('url-to-get-endpoint') // replace 'url-to-get-endpoint' with your API Gateway endpoint URL
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Failed to upload file');
+          throw new Error('Failed to get endpoint');
         }
-        return response.blob();
+        return response.json();
       })
-      .then((blob) => {
-        saveAs(blob, file.name); // Download the file as a blob
-
-        // Read the contents of the file
-        const reader = new FileReader();
-        reader.readAsText(blob);
-        reader.onload = (event) => {
-          setFileContent(event.target.result); // Set the file content
-        };
+      .then((data) => {
+        const endpoint = data.endpoint; // replace 'endpoint' with the name of the endpoint property in the API Gateway response
+        const formData = new FormData();
+        formData.append('file', file);
+  
+        fetch(endpoint, {
+          method: 'POST',
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to upload file');
+            }
+            return response.blob();
+          })
+          .then((blob) => {
+            saveAs(blob, file.name); // Download the file as a blob
+  
+            // Read the contents of the file
+            const reader = new FileReader();
+            reader.readAsText(blob);
+            reader.onload = (event) => {
+              setFileContent(event.target.result); // Set the file content
+            };
+          })
+          .catch((error) => {
+            console.error('Error uploading file:', error);
+          });
       })
       .catch((error) => {
-        console.error('Error uploading file:', error);
+        console.error('Error getting endpoint:', error);
       });
-
-
   }
+  
   //Code to import code from visualizeimg.js for displaying an image file from notebook's visualization
   const [imageSrc, setImageSrc] = useState("");
 
