@@ -19,13 +19,13 @@ function App() {
   //Handles the upload
   function handleUpload(event) {
     event.preventDefault(); // prevent default form submission
-  
+
     if (!file) {
       console.error('No file selected!');
       return;
     }
-  
-    fetch('url-to-get-endpoint') // replace 'url-to-get-endpoint' with your API Gateway endpoint URL
+
+    fetch('https://x98wwkowyl.execute-api.us-east-1.amazonaws.com/prod/upload-csv') // replace 'url-to-get-endpoint' with your API Gateway endpoint URL
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to get endpoint');
@@ -33,10 +33,10 @@ function App() {
         return response.json();
       })
       .then((data) => {
-        const endpoint = data.endpoint; // replace 'endpoint' with the name of the endpoint property in the API Gateway response
+        const endpoint = '/prod/upload-csv'; // replace 'endpoint' with the name of the endpoint property in the API Gateway response
         const formData = new FormData();
         formData.append('file', file);
-  
+
         fetch(endpoint, {
           method: 'POST',
           body: formData,
@@ -49,7 +49,7 @@ function App() {
           })
           .then((blob) => {
             saveAs(blob, file.name); // Download the file as a blob
-  
+
             // Read the contents of the file
             const reader = new FileReader();
             reader.readAsText(blob);
@@ -65,12 +65,12 @@ function App() {
         console.error('Error getting endpoint:', error);
       });
   }
-  
+
   //Code to import code from visualizeimg.js for displaying an image file from notebook's visualization
   const [imageSrc, setImageSrc] = useState("");
 
   useEffect(() => {
-    fetch("path/to/your/ipynb/file.ipynb")
+    fetch("path/to/your/ipynb/file.ipynb") //Here will be the path to the notebook file to get the visualization
       .then((response) => response.json())
       .then((data) => {
         const image = data["outputs"].find(
@@ -89,7 +89,6 @@ function App() {
         <h4>Choose the file to be analyzed</h4>
         <input type="file" name="file" onChange={handleFile} />
         <button id="uploader">Upload File</button>
-        <hr></hr>
       </form>
       {file && (
         <div>
@@ -104,15 +103,13 @@ function App() {
         </div>
       )}
       {/* This code is to return the notebook image */}
-
+      <hr></hr>
       <div>
         <img src={imageSrc} alt="Notebook visualization" />
       </div>
-
+      <br></br>
+      <hr></hr>
     </div>
-
-    // This code is to return the notebook image
-
   );
 }
 
